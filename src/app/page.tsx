@@ -1,3 +1,5 @@
+"use client";
+
 import { Users, Target, Send, TrendingUp } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
 import { NodeGraph } from "@/components/dashboard/node-graph";
