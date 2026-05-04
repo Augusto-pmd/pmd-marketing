@@ -1,7 +1,9 @@
 "use client";
 
-import { Heart, ShieldAlert, RefreshCcw, Copy } from "lucide-react";
+import { useState } from "react";
+import { Heart, ShieldAlert, RefreshCcw, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
 type Template = {
   id: string;
@@ -60,6 +62,36 @@ const ACCENT_STYLES = {
 };
 
 export function ResponseTemplates() {
+  const { toast } = useToast();
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const handleCopy = async (t: Template) => {
+    await navigator.clipboard.writeText(t.preview);
+    setCopied(t.id);
+    setTimeout(() => setCopied((c) => (c === t.id ? null : c)), 1600);
+    toast({
+      title: "Plantilla copiada",
+      description: `"${t.title}" lista para pegar en tu respuesta.`,
+      variant: "info",
+    });
+  };
+
+  const handleUse = (t: Template) => {
+    toast({
+      title: `Usando "${t.title}"`,
+      description: "Abrí una reseña pendiente para insertar la plantilla.",
+      variant: "success",
+    });
+  };
+
+  const handleNew = () => {
+    toast({
+      title: "Nueva plantilla",
+      description: "Próximamente: editor de plantillas personalizadas.",
+      variant: "info",
+    });
+  };
+
   return (
     <div className="rounded-xl border border-white/5 bg-surface/80 backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3 border-b border-white/5 px-5 py-4">
@@ -73,7 +105,8 @@ export function ResponseTemplates() {
         </div>
         <button
           type="button"
-          className="rounded-md border border-white/10 bg-surface-2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted hover:text-foreground"
+          onClick={handleNew}
+          className="rounded-md border border-white/10 bg-surface-2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted hover:text-foreground hover:border-cyan/30 transition-all"
         >
           + Nueva
         </button>
@@ -82,6 +115,7 @@ export function ResponseTemplates() {
         {TEMPLATES.map((t) => {
           const Icon = t.icon;
           const styles = ACCENT_STYLES[t.accent];
+          const isCopied = copied === t.id;
           return (
             <div
               key={t.id}
@@ -112,6 +146,7 @@ export function ResponseTemplates() {
               <div className="flex gap-2">
                 <button
                   type="button"
+                  onClick={() => handleUse(t)}
                   className={cn(
                     "flex-1 rounded-md border px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-all",
                     styles.border,
@@ -124,10 +159,20 @@ export function ResponseTemplates() {
                 </button>
                 <button
                   type="button"
-                  className="rounded-md border border-white/10 bg-surface-2 px-2.5 py-1.5 text-muted hover:text-foreground transition-colors"
-                  title="Copiar"
+                  onClick={() => handleCopy(t)}
+                  className={cn(
+                    "rounded-md border bg-surface-2 px-2.5 py-1.5 transition-all",
+                    isCopied
+                      ? "border-success/40 text-success"
+                      : "border-white/10 text-muted hover:text-foreground hover:border-white/20"
+                  )}
+                  title={isCopied ? "¡Copiado!" : "Copiar"}
                 >
-                  <Copy className="h-3 w-3" />
+                  {isCopied ? (
+                    <Check className="h-3 w-3" />
+                  ) : (
+                    <Copy className="h-3 w-3" />
+                  )}
                 </button>
               </div>
             </div>

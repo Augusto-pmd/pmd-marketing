@@ -2,6 +2,7 @@
 
 import { Sparkles, TrendingUp, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
 const SUGGESTIONS = [
   {
@@ -42,6 +43,14 @@ const SUGGESTIONS = [
 ];
 
 export function ContentSuggestions() {
+  const { toast } = useToast();
+  const handleCreate = (title: string) => {
+    toast({
+      title: "Briefing generado",
+      description: `Outline para "${title}" listo en Content Studio.`,
+      variant: "success",
+    });
+  };
   return (
     <div className="rounded-xl border border-amber/20 bg-gradient-to-br from-amber/[0.04] to-magenta/[0.03] backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3 border-b border-white/5 px-5 py-4">
@@ -110,7 +119,8 @@ export function ContentSuggestions() {
             </div>
             <button
               type="button"
-              className="flex shrink-0 items-center gap-1.5 rounded-md border border-amber/40 bg-amber/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-amber hover:bg-amber/20 transition-all"
+              onClick={() => handleCreate(s.title)}
+              className="flex shrink-0 items-center gap-1.5 rounded-md border border-amber/40 bg-amber/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-amber hover:bg-amber/20 hover:shadow-glow-amber transition-all"
             >
               <Plus className="h-3 w-3" />
               Crear

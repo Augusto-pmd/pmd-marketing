@@ -1,8 +1,10 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Download, ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
 type Row = {
   id: string;
@@ -82,10 +84,51 @@ function roiColor(r: number) {
   return "text-magenta";
 }
 
+type SortKey = "roi" | "cpl" | "spent" | "leads";
+
 export function CampaignSpendTable() {
+  const { toast } = useToast();
+  const [sortBy, setSortBy] = useState<SortKey>("roi");
+
+  const sorted = useMemo(() => {
+    return [...ROWS].sort((a, b) => {
+      if (sortBy === "cpl") return a.cpl - b.cpl;
+      return b[sortBy] - a[sortBy];
+    });
+  }, [sortBy]);
+
+  const handleExport = () => {
+    const headers = ["Campaña", "Asignado", "Gastado", "Leads", "CPL", "ROI"];
+    const csvRows = [headers.join(",")];
+    for (const r of sorted) {
+      csvRows.push(
+        [
+          `"${r.campaign}"`,
+          r.budget,
+          r.spent,
+          r.leads,
+          r.cpl,
+          `${r.roi}%`,
+        ].join(",")
+      );
+    }
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `presupuesto-campañas-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({
+      title: "Exportado a CSV",
+      description: `${sorted.length} campañas descargadas.`,
+      variant: "success",
+    });
+  };
+
   return (
     <div className="rounded-xl border border-white/5 bg-surface/80 backdrop-blur-xl">
-      <div className="flex items-center justify-between gap-3 border-b border-white/5 px-5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 px-5 py-4">
         <div>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
             Detalle
@@ -94,9 +137,42 @@ export function CampaignSpendTable() {
             Gasto y rendimiento por campaña
           </h3>
         </div>
-        <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
-          {ROWS.length} campañas activas
-        </span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 rounded-lg border border-white/5 bg-surface-2 p-0.5">
+            {(
+              [
+                { id: "roi", label: "ROI" },
+                { id: "cpl", label: "CPL" },
+                { id: "spent", label: "Gasto" },
+                { id: "leads", label: "Leads" },
+              ] as { id: SortKey; label: string }[]
+            ).map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setSortBy(s.id)}
+                className={cn(
+                  "flex items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] uppercase tracking-wider transition-all",
+                  sortBy === s.id
+                    ? "bg-cyan/15 text-cyan"
+                    : "text-muted hover:text-foreground"
+                )}
+              >
+                {sortBy === s.id && <ArrowUpDown className="h-2.5 w-2.5" />}
+                {s.label}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={handleExport}
+            className="flex items-center gap-1.5 rounded-lg border border-success/30 bg-success/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-success hover:bg-success/20 hover:shadow-glow-success transition-all"
+            title="Descargar CSV"
+          >
+            <Download className="h-3 w-3" />
+            CSV
+          </button>
+        </div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -123,7 +199,7 @@ export function CampaignSpendTable() {
             </tr>
           </thead>
           <tbody>
-            {ROWS.map((r, i) => {
+            {sorted.map((r, i) => {
               const pctSpent = (r.spent / r.budget) * 100;
               return (
                 <motion.tr

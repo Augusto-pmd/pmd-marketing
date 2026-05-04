@@ -4,10 +4,11 @@ import { MainChart } from "@/components/analytics/main-chart";
 import { PlatformChart } from "@/components/analytics/platform-chart";
 import { TopPosts } from "@/components/analytics/top-posts";
 import { Demographics } from "@/components/analytics/demographics";
+import { PageMotion } from "@/components/ui/page-motion";
 
 export default function AnalyticsPage() {
   return (
-    <div className="space-y-6">
+    <PageMotion className="space-y-6">
       <div className="flex items-end justify-between gap-4">
         <div>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
@@ -37,6 +38,6 @@ export default function AnalyticsPage() {
       <TopPosts />
 
       <Demographics />
-    </div>
+    </PageMotion>
   );
 }

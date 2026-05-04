@@ -22,6 +22,7 @@ import {
   SOURCE_ACCENT,
 } from "@/lib/crm-data";
 import { cn, formatNumber } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
 type Interaction = {
   icon: LucideIcon;
@@ -76,8 +77,32 @@ export function ContactPanel({
   contact: Contact | null;
   onClose: () => void;
 }) {
+  const { toast } = useToast();
   const open = contact !== null;
   const stage = contact ? STAGE_ACCENT[contact.stage] : null;
+
+  const handleEmail = () => {
+    if (!contact) return;
+    const subject = encodeURIComponent(`PMD Arquitectura — Seguimiento`);
+    window.location.href = `mailto:${contact.email}?subject=${subject}`;
+    toast({ title: "Abriendo cliente de email", variant: "info" });
+  };
+
+  const handleCall = () => {
+    if (!contact) return;
+    const tel = contact.phone.replace(/[^+\d]/g, "");
+    window.location.href = `tel:${tel}`;
+    toast({ title: `Llamando a ${contact.name}`, variant: "info" });
+  };
+
+  const handleProposal = () => {
+    if (!contact) return;
+    toast({
+      title: "Propuesta",
+      description: `Generando borrador de propuesta para ${contact.name}.`,
+      variant: "success",
+    });
+  };
 
   return (
     <Dialog.Root open={open} onOpenChange={(o) => !o && onClose()}>
@@ -204,21 +229,24 @@ export function ContactPanel({
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
-                    className="flex flex-col items-center gap-1 rounded-lg border border-white/5 bg-surface-2 py-2.5 text-muted hover:border-cyan/40 hover:text-cyan hover:bg-cyan/5 transition-all"
+                    onClick={handleEmail}
+                    className="flex flex-col items-center gap-1 rounded-lg border border-white/5 bg-surface-2 py-2.5 text-muted hover:border-cyan/40 hover:text-cyan hover:bg-cyan/5 hover:shadow-glow-cyan transition-all"
                   >
                     <Send className="h-4 w-4" />
                     <span className="text-[10px] font-medium">Email</span>
                   </button>
                   <button
                     type="button"
-                    className="flex flex-col items-center gap-1 rounded-lg border border-white/5 bg-surface-2 py-2.5 text-muted hover:border-success/40 hover:text-success hover:bg-success/5 transition-all"
+                    onClick={handleCall}
+                    className="flex flex-col items-center gap-1 rounded-lg border border-white/5 bg-surface-2 py-2.5 text-muted hover:border-success/40 hover:text-success hover:bg-success/5 hover:shadow-glow-success transition-all"
                   >
                     <PhoneCall className="h-4 w-4" />
                     <span className="text-[10px] font-medium">Llamar</span>
                   </button>
                   <button
                     type="button"
-                    className="flex flex-col items-center gap-1 rounded-lg border border-white/5 bg-surface-2 py-2.5 text-muted hover:border-amber/40 hover:text-amber hover:bg-amber/5 transition-all"
+                    onClick={handleProposal}
+                    className="flex flex-col items-center gap-1 rounded-lg border border-white/5 bg-surface-2 py-2.5 text-muted hover:border-amber/40 hover:text-amber hover:bg-amber/5 hover:shadow-glow-amber transition-all"
                   >
                     <FileText className="h-4 w-4" />
                     <span className="text-[10px] font-medium">Propuesta</span>

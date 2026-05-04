@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Star, MessageCircle, Reply, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
 type Platform = "google" | "facebook";
 
@@ -17,7 +18,7 @@ type Review = {
   responded: boolean;
 };
 
-const REVIEWS: Review[] = [
+const INITIAL_REVIEWS: Review[] = [
   {
     id: "r1",
     reviewer: "Mariana Ferreyra",
@@ -65,6 +66,14 @@ const REVIEWS: Review[] = [
   },
 ];
 
+type Filter = "all" | "google" | "facebook";
+
+const FILTERS: { id: Filter; label: string }[] = [
+  { id: "all", label: "Todas" },
+  { id: "google", label: "Google" },
+  { id: "facebook", label: "Facebook" },
+];
+
 function GoogleIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -85,8 +94,43 @@ function FacebookIcon({ className }: { className?: string }) {
 }
 
 export function ReviewFeed() {
+  const { toast } = useToast();
+  const [reviews, setReviews] = useState<Review[]>(INITIAL_REVIEWS);
+  const [filter, setFilter] = useState<Filter>("all");
   const [replyOpen, setReplyOpen] = useState<string | null>(null);
   const [replies, setReplies] = useState<Record<string, string>>({});
+
+  const filtered = useMemo(
+    () =>
+      filter === "all" ? reviews : reviews.filter((r) => r.platform === filter),
+    [filter, reviews]
+  );
+
+  const handleSend = (review: Review) => {
+    const text = (replies[review.id] || "").trim();
+    if (!text) {
+      toast({
+        title: "Escribí una respuesta",
+        description: "El mensaje no puede estar vacío.",
+        variant: "error",
+      });
+      return;
+    }
+    setReviews((prev) =>
+      prev.map((r) => (r.id === review.id ? { ...r, responded: true } : r))
+    );
+    setReplyOpen(null);
+    setReplies((p) => {
+      const next = { ...p };
+      delete next[review.id];
+      return next;
+    });
+    toast({
+      title: "Respuesta enviada",
+      description: `Se publicó tu respuesta a ${review.reviewer} en ${review.platform === "google" ? "Google" : "Facebook"}.`,
+      variant: "success",
+    });
+  };
 
   return (
     <div className="rounded-xl border border-white/5 bg-surface/80 backdrop-blur-xl">
@@ -100,124 +144,135 @@ export function ReviewFeed() {
           </h3>
         </div>
         <div className="flex items-center gap-1.5 rounded-lg border border-white/5 bg-surface-2 p-0.5">
-          {["Todas", "Google", "Facebook"].map((f, i) => (
+          {FILTERS.map((f) => (
             <button
-              key={f}
+              key={f.id}
               type="button"
+              onClick={() => setFilter(f.id)}
               className={cn(
                 "rounded-md px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider transition-all",
-                i === 0
+                filter === f.id
                   ? "bg-amber/15 text-amber"
                   : "text-muted hover:text-foreground"
               )}
             >
-              {f}
+              {f.label}
             </button>
           ))}
         </div>
       </div>
 
       <div className="divide-y divide-white/5">
-        {REVIEWS.map((r, i) => (
-          <motion.div
-            key={r.id}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className="p-5"
-          >
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan/20 to-magenta/20 border border-white/10 font-mono text-sm font-semibold text-foreground">
-                {r.reviewer
-                  .split(" ")
-                  .map((n) => n[0])
-                  .slice(0, 2)
-                  .join("")}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-foreground">{r.reviewer}</span>
-                    <div className="flex items-center gap-0.5">
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <Star
-                          key={s}
-                          className={cn(
-                            "h-3 w-3",
-                            s <= r.rating
-                              ? "fill-amber text-amber"
-                              : "text-white/15"
-                          )}
-                        />
-                      ))}
+        <AnimatePresence mode="popLayout">
+          {filtered.map((r, i) => (
+            <motion.div
+              key={r.id}
+              layout
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ delay: i * 0.04 }}
+              className="p-5"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan/20 to-magenta/20 border border-white/10 font-mono text-sm font-semibold text-foreground">
+                  {r.reviewer
+                    .split(" ")
+                    .map((n) => n[0])
+                    .slice(0, 2)
+                    .join("")}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-foreground">{r.reviewer}</span>
+                      <div className="flex items-center gap-0.5">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star
+                            key={s}
+                            className={cn(
+                              "h-3 w-3",
+                              s <= r.rating
+                                ? "fill-amber text-amber"
+                                : "text-white/15"
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {r.platform === "google" ? (
+                        <GoogleIcon className="h-3.5 w-3.5" />
+                      ) : (
+                        <FacebookIcon className="h-3.5 w-3.5" />
+                      )}
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
+                        {r.date}
+                      </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {r.platform === "google" ? (
-                      <GoogleIcon className="h-3.5 w-3.5" />
+                  <p className="mt-2 text-sm text-foreground/90 leading-relaxed">
+                    {r.text}
+                  </p>
+                  <div className="mt-3 flex items-center gap-2">
+                    {r.responded ? (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-success">
+                        <MessageCircle className="h-3 w-3" />
+                        Respondida
+                      </span>
                     ) : (
-                      <FacebookIcon className="h-3.5 w-3.5" />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setReplyOpen(replyOpen === r.id ? null : r.id)
+                        }
+                        className="inline-flex items-center gap-1.5 rounded-full border border-cyan/40 bg-cyan/10 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-cyan hover:bg-cyan/20 transition-all"
+                      >
+                        <Reply className="h-3 w-3" />
+                        Responder
+                      </button>
                     )}
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
-                      {r.date}
-                    </span>
                   </div>
-                </div>
-                <p className="mt-2 text-sm text-foreground/90 leading-relaxed">
-                  {r.text}
-                </p>
-                <div className="mt-3 flex items-center gap-2">
-                  {r.responded ? (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-success/30 bg-success/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-success">
-                      <MessageCircle className="h-3 w-3" />
-                      Respondida
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setReplyOpen(replyOpen === r.id ? null : r.id)
-                      }
-                      className="inline-flex items-center gap-1.5 rounded-full border border-cyan/40 bg-cyan/10 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-cyan hover:bg-cyan/20 transition-all"
-                    >
-                      <Reply className="h-3 w-3" />
-                      Responder
-                    </button>
+                  {replyOpen === r.id && !r.responded && (
+                    <div className="mt-3 animate-fade-in">
+                      <textarea
+                        rows={2}
+                        value={replies[r.id] || ""}
+                        onChange={(e) =>
+                          setReplies((p) => ({ ...p, [r.id]: e.target.value }))
+                        }
+                        placeholder="Escribí una respuesta personalizada..."
+                        className="w-full rounded-lg border border-white/10 bg-surface-2 px-3 py-2 text-sm text-foreground placeholder:text-muted/50 focus:border-cyan/40 focus:outline-none focus:ring-1 focus:ring-cyan/20 resize-none"
+                      />
+                      <div className="mt-2 flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setReplyOpen(null)}
+                          className="rounded-md px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-muted hover:text-foreground"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSend(r)}
+                          className="flex items-center gap-1.5 rounded-md border border-cyan/40 bg-cyan/15 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-cyan hover:bg-cyan/25 hover:shadow-[0_0_16px_rgba(0,240,255,0.25)] transition-all"
+                        >
+                          <Send className="h-3 w-3" />
+                          Enviar
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
-                {replyOpen === r.id && !r.responded && (
-                  <div className="mt-3 animate-fade-in">
-                    <textarea
-                      rows={2}
-                      value={replies[r.id] || ""}
-                      onChange={(e) =>
-                        setReplies((p) => ({ ...p, [r.id]: e.target.value }))
-                      }
-                      placeholder="Escribí una respuesta personalizada..."
-                      className="w-full rounded-lg border border-white/10 bg-surface-2 px-3 py-2 text-sm text-foreground placeholder:text-muted/50 focus:border-cyan/40 focus:outline-none focus:ring-1 focus:ring-cyan/20 resize-none"
-                    />
-                    <div className="mt-2 flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setReplyOpen(null)}
-                        className="rounded-md px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-muted hover:text-foreground"
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        type="button"
-                        className="flex items-center gap-1.5 rounded-md border border-cyan/40 bg-cyan/15 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-cyan hover:bg-cyan/25"
-                      >
-                        <Send className="h-3 w-3" />
-                        Enviar
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+        {filtered.length === 0 && (
+          <div className="px-5 py-10 text-center font-mono text-xs uppercase tracking-wider text-muted">
+            Sin reseñas en {filter}
+          </div>
+        )}
       </div>
     </div>
   );

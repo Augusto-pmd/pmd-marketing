@@ -1,7 +1,9 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { Image as ImageIcon, Video, Upload, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
 type Asset = {
   id: string;
@@ -86,7 +88,42 @@ const CATEGORY_LABEL: Record<Asset["category"], string> = {
   equipo: "Equipo",
 };
 
+type CategoryFilter = "todas" | Asset["category"];
+
+const FILTERS: { id: CategoryFilter; label: string }[] = [
+  { id: "todas", label: "Todas" },
+  { id: "obras", label: "Obras" },
+  { id: "renders", label: "Renders" },
+  { id: "antes-despues", label: "Antes/Después" },
+  { id: "equipo", label: "Equipo" },
+];
+
 export function AssetLibrary() {
+  const { toast } = useToast();
+  const [filter, setFilter] = useState<CategoryFilter>("todas");
+  const [filterOpen, setFilterOpen] = useState(false);
+
+  const visible = useMemo(
+    () => (filter === "todas" ? ASSETS : ASSETS.filter((a) => a.category === filter)),
+    [filter]
+  );
+
+  const handleUpload = () => {
+    toast({
+      title: "Subir asset",
+      description: "Próximamente: integración con Drive y subida directa.",
+      variant: "info",
+    });
+  };
+
+  const handleAssetClick = (asset: Asset) => {
+    toast({
+      title: asset.title,
+      description: `${asset.size} · ${CATEGORY_LABEL[asset.category]}`,
+      variant: "info",
+    });
+  };
+
   return (
     <div className="rounded-xl border border-white/5 bg-surface/80 backdrop-blur-xl">
       <div className="border-b border-white/5 px-5 py-4 flex items-center justify-between gap-3">
@@ -97,15 +134,46 @@ export function AssetLibrary() {
           <h3 className="text-sm font-semibold text-foreground">Recursos visuales</h3>
         </div>
         <div className="flex items-center gap-2">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setFilterOpen((o) => !o)}
+              className={cn(
+                "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition-all",
+                filter !== "todas"
+                  ? "border-cyan/40 bg-cyan/10 text-cyan"
+                  : "border-white/10 bg-surface-2 text-muted hover:border-cyan/40 hover:text-cyan"
+              )}
+            >
+              <Filter className="h-3.5 w-3.5" />
+              {filter === "todas" ? "Filtrar" : FILTERS.find((f) => f.id === filter)?.label}
+            </button>
+            {filterOpen && (
+              <div className="absolute right-0 top-full z-10 mt-1 w-44 overflow-hidden rounded-lg border border-white/10 bg-surface backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+                {FILTERS.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => {
+                      setFilter(f.id);
+                      setFilterOpen(false);
+                    }}
+                    className={cn(
+                      "block w-full px-3 py-2 text-left text-xs transition-colors",
+                      filter === f.id
+                        ? "bg-cyan/10 text-cyan"
+                        : "text-muted hover:bg-white/5 hover:text-foreground"
+                    )}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button
             type="button"
-            className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-surface-2 px-3 py-1.5 text-xs text-muted hover:border-cyan/40 hover:text-cyan transition-all"
-          >
-            <Filter className="h-3.5 w-3.5" />
-            Filtrar
-          </button>
-          <button
-            type="button"
+            onClick={handleUpload}
             className="flex items-center gap-1.5 rounded-lg border border-cyan/40 bg-cyan/10 px-3 py-1.5 text-xs font-semibold text-cyan shadow-glow-cyan hover:bg-cyan/20 transition-all"
           >
             <Upload className="h-3.5 w-3.5" />
@@ -115,11 +183,12 @@ export function AssetLibrary() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 p-5 md:grid-cols-3 xl:grid-cols-4">
-        {ASSETS.map((asset) => {
+        {visible.map((asset) => {
           const Icon = asset.type === "video" ? Video : ImageIcon;
           return (
             <article
               key={asset.id}
+              onClick={() => handleAssetClick(asset)}
               className="group cursor-pointer overflow-hidden rounded-lg border border-white/5 bg-surface-2 transition-all hover:border-cyan/40 hover:shadow-glow-cyan"
             >
               <div
@@ -158,6 +227,7 @@ export function AssetLibrary() {
         {/* Upload tile */}
         <button
           type="button"
+          onClick={handleUpload}
           className="flex aspect-square flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-white/10 bg-surface-2/40 text-muted hover:border-cyan/40 hover:bg-cyan/5 hover:text-cyan transition-all"
         >
           <Upload className="h-6 w-6" />
@@ -167,6 +237,11 @@ export function AssetLibrary() {
           </span>
         </button>
       </div>
+      {visible.length === 0 && (
+        <div className="border-t border-white/5 px-5 py-8 text-center font-mono text-xs uppercase tracking-wider text-muted">
+          Sin recursos en {FILTERS.find((f) => f.id === filter)?.label}
+        </div>
+      )}
     </div>
   );
 }

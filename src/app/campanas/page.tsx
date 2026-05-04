@@ -2,6 +2,7 @@
 
 import { Mail, Send, Eye, MousePointer2 } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
+import { PageMotion } from "@/components/ui/page-motion";
 import { CampaignList } from "@/components/campanas/campaign-list";
 import { CampaignBuilder } from "@/components/campanas/campaign-builder";
 import { DripSequence } from "@/components/campanas/drip-sequence";
@@ -9,7 +10,7 @@ import { ABTest } from "@/components/campanas/ab-test";
 
 export default function CampanasPage() {
   return (
-    <div className="space-y-6">
+    <PageMotion className="space-y-6">
       <div className="flex items-end justify-between gap-4">
         <div>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
@@ -78,6 +79,6 @@ export default function CampanasPage() {
 
       {/* Campaign list */}
       <CampaignList />
-    </div>
+    </PageMotion>
   );
 }

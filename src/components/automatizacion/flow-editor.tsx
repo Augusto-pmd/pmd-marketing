@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
+import { useToast } from "@/components/ui/toast";
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -257,8 +258,17 @@ const PALETTE: Array<{
 ];
 
 export function FlowEditor() {
+  const { toast } = useToast();
   const [nodes, , onNodesChange] = useNodesState(INITIAL_NODES);
   const [edges, setEdges, onEdgesChange] = useEdgesState(INITIAL_EDGES);
+
+  const handleSave = () => {
+    toast({
+      title: "Flujo guardado",
+      description: `${nodes.length} nodos · ${edges.length} conexiones publicadas.`,
+      variant: "success",
+    });
+  };
 
   const onConnect = useCallback(
     (connection: Connection) =>
@@ -294,7 +304,8 @@ export function FlowEditor() {
           </span>
           <button
             type="button"
-            className="rounded-md border border-cyan/40 bg-cyan/15 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-cyan hover:bg-cyan/25"
+            onClick={handleSave}
+            className="rounded-md border border-cyan/40 bg-cyan/15 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-cyan hover:bg-cyan/25 hover:shadow-glow-cyan transition-all"
           >
             Guardar
           </button>

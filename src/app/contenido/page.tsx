@@ -3,10 +3,11 @@ import { AIGenerator } from "@/components/contenido/ai-generator";
 import { AssetLibrary } from "@/components/contenido/asset-library";
 import { BrandKit } from "@/components/contenido/brand-kit";
 import { Templates } from "@/components/contenido/templates";
+import { PageMotion } from "@/components/ui/page-motion";
 
 export default function ContenidoPage() {
   return (
-    <div className="space-y-6">
+    <PageMotion className="space-y-6">
       <div className="flex items-end justify-between gap-4">
         <div>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
@@ -35,6 +36,6 @@ export default function ContenidoPage() {
       </div>
 
       <Templates />
-    </div>
+    </PageMotion>
   );
 }

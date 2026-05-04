@@ -2,6 +2,7 @@
 
 import { Search, Link as LinkIcon, Hash, Globe } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
+import { PageMotion } from "@/components/ui/page-motion";
 import { KeywordTracker } from "@/components/seo/keyword-tracker";
 import { CompetitorComparison } from "@/components/seo/competitor-comparison";
 import { SiteHealth } from "@/components/seo/site-health";
@@ -9,7 +10,7 @@ import { ContentSuggestions } from "@/components/seo/content-suggestions";
 
 export default function SEOPage() {
   return (
-    <div className="space-y-6">
+    <PageMotion className="space-y-6">
       <div className="flex items-end justify-between gap-4">
         <div>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
@@ -78,6 +79,6 @@ export default function SEOPage() {
 
       {/* Content suggestions */}
       <ContentSuggestions />
-    </div>
+    </PageMotion>
   );
 }

@@ -10,6 +10,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
 type CampaignStatus = "borrador" | "activa" | "pausada" | "completada";
 
@@ -115,6 +116,24 @@ const STATUS_STYLES: Record<
 };
 
 export function CampaignList() {
+  const { toast } = useToast();
+
+  const handleNew = () => {
+    toast({
+      title: "Nueva campaña",
+      description: "Subí al constructor de arriba para crear una.",
+      variant: "info",
+    });
+  };
+
+  const handleRow = (c: Campaign) => {
+    toast({
+      title: c.name,
+      description: "Acciones: ver detalle, duplicar, exportar, archivar.",
+      variant: "info",
+    });
+  };
+
   return (
     <div className="rounded-xl border border-white/5 bg-surface/80 backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3 border-b border-white/5 px-5 py-4">
@@ -133,7 +152,8 @@ export function CampaignList() {
         </div>
         <button
           type="button"
-          className="rounded-lg border border-cyan/40 bg-cyan/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-cyan hover:bg-cyan/20 transition-all"
+          onClick={handleNew}
+          className="rounded-lg border border-cyan/40 bg-cyan/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-cyan hover:bg-cyan/20 hover:shadow-glow-cyan transition-all"
         >
           + Nueva campaña
         </button>
@@ -216,7 +236,8 @@ export function CampaignList() {
                   <td className="px-5 py-3.5 text-right">
                     <button
                       type="button"
-                      className="rounded-md p-1.5 text-muted hover:bg-white/5 hover:text-foreground"
+                      onClick={() => handleRow(c)}
+                      className="rounded-md p-1.5 text-muted hover:bg-white/5 hover:text-foreground transition-colors"
                     >
                       <MoreHorizontal className="h-4 w-4" />
                     </button>

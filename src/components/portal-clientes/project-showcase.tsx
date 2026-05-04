@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { MapPin, Building2, Home, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
 type ProjectType = "Residencial" | "Comercial" | "Industrial";
 type Status = "En obra" | "Entregado" | "En diseño";
@@ -88,6 +89,14 @@ const STATUS_STYLES: Record<Status, string> = {
 };
 
 export function ProjectShowcase() {
+  const { toast } = useToast();
+  const handleAdd = () => {
+    toast({
+      title: "Agregar proyecto",
+      description: "Subí fotos, planos y datos clave para publicar en el portal.",
+      variant: "info",
+    });
+  };
   return (
     <div className="rounded-xl border border-white/5 bg-surface/80 backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3 border-b border-white/5 px-5 py-4">
@@ -101,7 +110,8 @@ export function ProjectShowcase() {
         </div>
         <button
           type="button"
-          className="rounded-md border border-cyan/40 bg-cyan/10 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-cyan hover:bg-cyan/20"
+          onClick={handleAdd}
+          className="rounded-md border border-cyan/40 bg-cyan/10 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-cyan hover:bg-cyan/20 hover:shadow-glow-cyan transition-all"
         >
           + Agregar proyecto
         </button>

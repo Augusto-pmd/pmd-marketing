@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Camera, ThumbsUp, Briefcase, Music, Image as ImageIcon, Calendar, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
 type Platform = "instagram" | "facebook" | "linkedin" | "tiktok";
 
@@ -50,11 +51,58 @@ export function PostComposer({
 }: {
   onChange?: (state: { text: string; platforms: Platform[] }) => void;
 }) {
+  const { toast } = useToast();
   const [text, setText] = useState("");
   const [selected, setSelected] = useState<Platform[]>(["instagram"]);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [dragActive, setDragActive] = useState(false);
+
+  const validate = () => {
+    if (!text.trim()) {
+      toast({ title: "Escribí algo antes de publicar", variant: "error" });
+      return false;
+    }
+    if (text.length > MAX) {
+      toast({
+        title: "Texto demasiado largo",
+        description: `Reducí ${text.length - MAX} caracteres.`,
+        variant: "error",
+      });
+      return false;
+    }
+    if (selected.length === 0) {
+      toast({ title: "Elegí al menos una plataforma", variant: "error" });
+      return false;
+    }
+    return true;
+  };
+
+  const handleSchedule = () => {
+    if (!validate()) return;
+    if (!date || !time) {
+      toast({
+        title: "Falta fecha y hora",
+        description: "Elegí cuándo querés que se publique.",
+        variant: "error",
+      });
+      return;
+    }
+    toast({
+      title: "Post programado",
+      description: `${selected.length} plataforma${selected.length === 1 ? "" : "s"} · ${date} ${time}`,
+      variant: "success",
+    });
+  };
+
+  const handlePublish = () => {
+    if (!validate()) return;
+    toast({
+      title: "Publicado",
+      description: `Salió en ${selected.map((s) => s[0].toUpperCase() + s.slice(1)).join(", ")}.`,
+      variant: "success",
+    });
+  };
 
   const togglePlatform = (p: Platform) => {
     setSelected((prev) => {
@@ -200,6 +248,7 @@ export function PostComposer({
         <div className="flex flex-col-reverse sm:flex-row gap-2 pt-2">
           <button
             type="button"
+            onClick={handleSchedule}
             className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-surface-2 px-4 py-2.5 text-sm font-medium text-foreground hover:border-amber/40 hover:bg-amber/5 hover:text-amber transition-all"
           >
             <Calendar className="h-4 w-4" />
@@ -207,6 +256,7 @@ export function PostComposer({
           </button>
           <button
             type="button"
+            onClick={handlePublish}
             className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-cyan/40 bg-cyan/10 px-4 py-2.5 text-sm font-semibold text-cyan shadow-glow-cyan hover:bg-cyan/20 transition-all"
           >
             <Send className="h-4 w-4" />

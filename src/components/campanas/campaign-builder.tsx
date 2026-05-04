@@ -11,6 +11,7 @@ import {
   Building2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
 type Audience = "todos" | "leads-nuevos" | "clientes-activos" | "clientes-anteriores";
 
@@ -28,6 +29,7 @@ const SUBJECT_SUGGESTIONS = [
 ];
 
 export function CampaignBuilder() {
+  const { toast } = useToast();
   const [name, setName] = useState("Lanzamiento Casas Modulares Q2");
   const [subject, setSubject] = useState(
     "🏠 Diseñá tu casa de ensueño con PMD Arquitectura"
@@ -37,6 +39,36 @@ export function CampaignBuilder() {
   const [scheduleType, setScheduleType] = useState<"now" | "later">("later");
 
   const audienceData = AUDIENCES.find((a) => a.id === audience)!;
+
+  const handleSave = () => {
+    toast({
+      title: "Borrador guardado",
+      description: `"${name}" guardada en tus borradores.`,
+      variant: "success",
+    });
+  };
+
+  const handleSend = () => {
+    if (!subject.trim()) {
+      toast({
+        title: "Falta el asunto",
+        description: "Escribí un asunto antes de enviar.",
+        variant: "error",
+      });
+      return;
+    }
+    toast({
+      title:
+        scheduleType === "now"
+          ? `Enviando a ${audienceData.count.toLocaleString("es-AR")} contactos`
+          : "Campaña programada",
+      description:
+        scheduleType === "now"
+          ? `"${name}" salió a la cola de envío.`
+          : `"${name}" programada según el calendario.`,
+      variant: "success",
+    });
+  };
 
   return (
     <div className="rounded-xl border border-white/5 bg-surface/80 backdrop-blur-xl">
@@ -198,17 +230,21 @@ export function CampaignBuilder() {
           <div className="flex flex-col-reverse gap-2 sm:flex-row pt-2">
             <button
               type="button"
-              className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-surface px-3 py-2.5 text-sm font-medium text-foreground hover:border-white/20"
+              onClick={handleSave}
+              className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-surface px-3 py-2.5 text-sm font-medium text-foreground hover:border-white/20 transition-all"
             >
               <Save className="h-4 w-4" />
               Guardar Borrador
             </button>
             <button
               type="button"
+              onClick={handleSend}
               className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-cyan/40 bg-cyan/15 px-3 py-2.5 text-sm font-semibold text-cyan shadow-glow-cyan hover:bg-cyan/25 transition-all"
             >
               <Send className="h-4 w-4" />
-              Enviar a {audienceData.count.toLocaleString("es-AR")} contactos
+              {scheduleType === "now"
+                ? `Enviar a ${audienceData.count.toLocaleString("es-AR")} contactos`
+                : "Programar envío"}
             </button>
           </div>
         </div>

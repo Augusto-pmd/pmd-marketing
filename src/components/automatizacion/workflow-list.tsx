@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Workflow, Power, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
 type FlowItem = {
   id: string;
@@ -13,7 +15,7 @@ type FlowItem = {
   trigger: string;
 };
 
-const WORKFLOWS: FlowItem[] = [
+const INITIAL_WORKFLOWS: FlowItem[] = [
   {
     id: "w1",
     name: "Onboarding leads calificados",
@@ -57,6 +59,36 @@ const WORKFLOWS: FlowItem[] = [
 ];
 
 export function WorkflowList() {
+  const { toast } = useToast();
+  const [workflows, setWorkflows] = useState<FlowItem[]>(INITIAL_WORKFLOWS);
+
+  const handleToggle = (w: FlowItem) => {
+    setWorkflows((prev) =>
+      prev.map((x) => (x.id === w.id ? { ...x, active: !x.active } : x))
+    );
+    toast({
+      title: w.active ? "Workflow pausado" : "Workflow activado",
+      description: w.name,
+      variant: w.active ? "info" : "success",
+    });
+  };
+
+  const handleNew = () => {
+    toast({
+      title: "Nuevo workflow",
+      description: "Arrastrá un trigger desde el editor para empezar.",
+      variant: "info",
+    });
+  };
+
+  const handleMore = (w: FlowItem) => {
+    toast({
+      title: w.name,
+      description: "Acciones: editar, duplicar, eliminar.",
+      variant: "info",
+    });
+  };
+
   return (
     <div className="rounded-xl border border-white/5 bg-surface/80 backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3 border-b border-white/5 px-5 py-4">
@@ -75,13 +107,14 @@ export function WorkflowList() {
         </div>
         <button
           type="button"
-          className="rounded-lg border border-magenta/40 bg-magenta/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-magenta hover:bg-magenta/20"
+          onClick={handleNew}
+          className="rounded-lg border border-magenta/40 bg-magenta/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-magenta hover:bg-magenta/20 hover:shadow-glow-magenta transition-all"
         >
           + Nuevo workflow
         </button>
       </div>
       <div className="divide-y divide-white/5">
-        {WORKFLOWS.map((w, i) => (
+        {workflows.map((w, i) => (
           <motion.div
             key={w.id}
             initial={{ opacity: 0, y: 6 }}
@@ -91,11 +124,12 @@ export function WorkflowList() {
           >
             <button
               type="button"
+              onClick={() => handleToggle(w)}
               className={cn(
                 "flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-all",
                 w.active
                   ? "border-success/40 bg-success/10 text-success shadow-glow-success"
-                  : "border-white/10 bg-surface-2 text-muted"
+                  : "border-white/10 bg-surface-2 text-muted hover:border-success/30 hover:text-success/70"
               )}
               title={w.active ? "Desactivar" : "Activar"}
             >
@@ -133,7 +167,8 @@ export function WorkflowList() {
             </div>
             <button
               type="button"
-              className="rounded-md p-1.5 text-muted hover:bg-white/5 hover:text-foreground"
+              onClick={() => handleMore(w)}
+              className="rounded-md p-1.5 text-muted hover:bg-white/5 hover:text-foreground transition-colors"
             >
               <MoreHorizontal className="h-4 w-4" />
             </button>

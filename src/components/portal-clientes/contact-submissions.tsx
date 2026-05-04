@@ -1,8 +1,10 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Inbox, MailCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
 type Submission = {
   id: string;
@@ -13,7 +15,7 @@ type Submission = {
   status: "Nuevo" | "Respondido";
 };
 
-const SUBMISSIONS: Submission[] = [
+const INITIAL_SUBMISSIONS: Submission[] = [
   {
     id: "s1",
     name: "Federico Álvarez",
@@ -60,6 +62,30 @@ const SUBMISSIONS: Submission[] = [
 ];
 
 export function ContactSubmissions() {
+  const { toast } = useToast();
+  const [submissions, setSubmissions] = useState<Submission[]>(INITIAL_SUBMISSIONS);
+
+  const newCount = useMemo(
+    () => submissions.filter((s) => s.status === "Nuevo").length,
+    [submissions]
+  );
+
+  const handleRespond = (s: Submission) => {
+    const subject = encodeURIComponent("Re: Consulta desde pmdarquitectura.com.ar");
+    const body = encodeURIComponent(
+      `Hola ${s.name.split(" ")[0]},\n\nGracias por escribirnos. Recibimos tu mensaje:\n\n"${s.message}"\n\n`
+    );
+    window.location.href = `mailto:${s.email}?subject=${subject}&body=${body}`;
+    setSubmissions((prev) =>
+      prev.map((x) => (x.id === s.id ? { ...x, status: "Respondido" } : x))
+    );
+    toast({
+      title: `Respuesta a ${s.name}`,
+      description: "Se abrió tu cliente de email y se marcó como respondido.",
+      variant: "success",
+    });
+  };
+
   return (
     <div className="rounded-xl border border-white/5 bg-surface/80 backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3 border-b border-white/5 px-5 py-4">
@@ -76,8 +102,15 @@ export function ContactSubmissions() {
             </h3>
           </div>
         </div>
-        <span className="rounded-full border border-magenta/30 bg-magenta/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-magenta">
-          2 nuevos
+        <span
+          className={cn(
+            "rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider transition-colors",
+            newCount > 0
+              ? "border-magenta/30 bg-magenta/10 text-magenta"
+              : "border-success/30 bg-success/10 text-success"
+          )}
+        >
+          {newCount > 0 ? `${newCount} nuevos` : "Todo al día"}
         </span>
       </div>
       <div className="overflow-x-auto">
@@ -100,7 +133,7 @@ export function ContactSubmissions() {
             </tr>
           </thead>
           <tbody>
-            {SUBMISSIONS.map((s, i) => (
+            {submissions.map((s, i) => (
               <motion.tr
                 key={s.id}
                 initial={{ opacity: 0, y: 6 }}
@@ -155,7 +188,8 @@ export function ContactSubmissions() {
                 <td className="px-5 py-3.5 align-top text-right">
                   <button
                     type="button"
-                    className="rounded-md border border-cyan/40 bg-cyan/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-cyan hover:bg-cyan/20"
+                    onClick={() => handleRespond(s)}
+                    className="rounded-md border border-cyan/40 bg-cyan/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-cyan hover:bg-cyan/20 hover:shadow-[0_0_16px_rgba(0,240,255,0.2)] transition-all"
                   >
                     Responder
                   </button>

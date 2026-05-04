@@ -2,6 +2,7 @@
 
 import { Star, ThumbsUp, MessageCircle, AlertCircle } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
+import { PageMotion } from "@/components/ui/page-motion";
 import { OverallRating } from "@/components/reputacion/overall-rating";
 import { ReviewFeed } from "@/components/reputacion/review-feed";
 import { SentimentChart } from "@/components/reputacion/sentiment-chart";
@@ -10,7 +11,7 @@ import { ReputationAlerts } from "@/components/reputacion/alerts";
 
 export default function ReputacionPage() {
   return (
-    <div className="space-y-6">
+    <PageMotion className="space-y-6">
       <div className="flex items-end justify-between gap-4">
         <div>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
@@ -83,6 +84,6 @@ export default function ReputacionPage() {
 
       {/* Feed */}
       <ReviewFeed />
-    </div>
+    </PageMotion>
   );
 }

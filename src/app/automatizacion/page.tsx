@@ -2,13 +2,14 @@
 
 import { Workflow, Zap, Activity, CheckCircle2 } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
+import { PageMotion } from "@/components/ui/page-motion";
 import { FlowEditor } from "@/components/automatizacion/flow-editor";
 import { WorkflowList } from "@/components/automatizacion/workflow-list";
 import { ActivityLog } from "@/components/automatizacion/activity-log";
 
 export default function AutomatizacionPage() {
   return (
-    <div className="space-y-6">
+    <PageMotion className="space-y-6">
       <div className="flex items-end justify-between gap-4">
         <div>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
@@ -74,6 +75,6 @@ export default function AutomatizacionPage() {
 
       {/* Activity log */}
       <ActivityLog />
-    </div>
+    </PageMotion>
   );
 }

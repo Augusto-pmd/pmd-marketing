@@ -11,6 +11,7 @@ import {
   SOURCE_ACCENT,
 } from "@/lib/crm-data";
 import { cn, formatCompact } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
 export function LeadKanban({
   contacts,
@@ -21,8 +22,17 @@ export function LeadKanban({
   onMove: (id: string, stage: LeadStage) => void;
   onSelect: (c: Contact) => void;
 }) {
+  const { toast } = useToast();
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<LeadStage | null>(null);
+
+  const handleAddTo = (stage: LeadStage) => {
+    toast({
+      title: `Nuevo lead en "${STAGE_LABEL[stage]}"`,
+      description: "Próximamente: formulario rápido de captura.",
+      variant: "info",
+    });
+  };
 
   const grouped = STAGES_ORDER.reduce<Record<LeadStage, Contact[]>>(
     (acc, stage) => {
@@ -92,6 +102,7 @@ export function LeadKanban({
                   <button
                     type="button"
                     aria-label="Agregar"
+                    onClick={() => handleAddTo(stage)}
                     className="flex h-5 w-5 items-center justify-center rounded text-muted hover:text-cyan hover:bg-cyan/10 transition-colors"
                   >
                     <Plus className="h-3 w-3" />

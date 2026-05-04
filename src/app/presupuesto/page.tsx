@@ -2,6 +2,7 @@
 
 import { DollarSign, Target, TrendingUp, Users } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
+import { PageMotion } from "@/components/ui/page-motion";
 import { BudgetOverview } from "@/components/presupuesto/budget-overview";
 import { SpendBreakdown } from "@/components/presupuesto/spend-breakdown";
 import { CPLChart } from "@/components/presupuesto/cpl-chart";
@@ -10,7 +11,7 @@ import { CampaignSpendTable } from "@/components/presupuesto/campaign-spend-tabl
 
 export default function PresupuestoPage() {
   return (
-    <div className="space-y-6">
+    <PageMotion className="space-y-6">
       <div className="flex items-end justify-between gap-4">
         <div>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
@@ -82,6 +83,6 @@ export default function PresupuestoPage() {
 
       {/* Campaign table */}
       <CampaignSpendTable />
-    </div>
+    </PageMotion>
   );
 }

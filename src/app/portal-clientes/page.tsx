@@ -2,6 +2,7 @@
 
 import { Globe, Building2, Inbox, Gift } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
+import { PageMotion } from "@/components/ui/page-motion";
 import { ProjectShowcase } from "@/components/portal-clientes/project-showcase";
 import { Testimonials } from "@/components/portal-clientes/testimonials";
 import { ReferralProgram } from "@/components/portal-clientes/referral-program";
@@ -9,7 +10,7 @@ import { ContactSubmissions } from "@/components/portal-clientes/contact-submiss
 
 export default function PortalClientesPage() {
   return (
-    <div className="space-y-6">
+    <PageMotion className="space-y-6">
       <div className="flex items-end justify-between gap-4">
         <div>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
@@ -80,6 +81,6 @@ export default function PortalClientesPage() {
 
       {/* Submissions */}
       <ContactSubmissions />
-    </div>
+    </PageMotion>
   );
 }

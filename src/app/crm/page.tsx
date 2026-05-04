@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { Users, UserPlus, Percent, Clock } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
+import { PageMotion } from "@/components/ui/page-motion";
 import { ContactTable } from "@/components/crm/contact-table";
 import { LeadKanban } from "@/components/crm/lead-kanban";
 import { ContactPanel } from "@/components/crm/contact-panel";
@@ -21,7 +22,7 @@ export default function CRMPage() {
     const newThisMonth = contacts.filter((c) => c.stage === "nuevo").length;
     const clients = contacts.filter((c) => c.stage === "cliente").length;
     const conversion = total > 0 ? Math.round((clients / total) * 100) : 0;
-    return { total, newThisMonth, conversion };
+    return { total, newThisMonth, clients, conversion };
   }, [contacts]);
 
   const handleMove = (id: string, stage: LeadStage) => {
@@ -31,13 +32,19 @@ export default function CRMPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <PageMotion className="space-y-6">
       <div className="flex items-end justify-between gap-4">
         <div>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
             Módulo
           </span>
           <h1 className="mt-1 text-2xl font-semibold text-foreground">CRM</h1>
+        </div>
+        <div className="hidden md:flex items-center gap-2 rounded-lg border border-white/5 bg-surface/60 px-3 py-1.5 backdrop-blur-xl">
+          <Users className="h-3.5 w-3.5 text-success" />
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+            {stats.total} contactos · {stats.clients} clientes
+          </span>
         </div>
       </div>
 
@@ -93,6 +100,6 @@ export default function CRMPage() {
 
       {/* Slide-out panel */}
       <ContactPanel contact={selected} onClose={() => setSelected(null)} />
-    </div>
+    </PageMotion>
   );
 }

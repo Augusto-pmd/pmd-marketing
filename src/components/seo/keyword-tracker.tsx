@@ -1,14 +1,18 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowUp,
   ArrowDown,
   Minus,
   Search,
   ExternalLink,
+  Plus,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
 
 type Keyword = {
   term: string;
@@ -19,7 +23,7 @@ type Keyword = {
   url: string;
 };
 
-const KEYWORDS: Keyword[] = [
+const INITIAL_KEYWORDS: Keyword[] = [
   {
     term: "casas modulares premium",
     position: 3,
@@ -85,6 +89,35 @@ function diffColor(d: number) {
 }
 
 export function KeywordTracker() {
+  const { toast } = useToast();
+  const [keywords, setKeywords] = useState<Keyword[]>(INITIAL_KEYWORDS);
+  const [adding, setAdding] = useState(false);
+  const [newTerm, setNewTerm] = useState("");
+
+  const handleAdd = () => {
+    const term = newTerm.trim();
+    if (!term) {
+      toast({ title: "Escribí una keyword", variant: "error" });
+      return;
+    }
+    const next: Keyword = {
+      term,
+      position: 0,
+      change: 0,
+      volume: 0,
+      difficulty: 0,
+      url: "—",
+    };
+    setKeywords((prev) => [next, ...prev]);
+    setNewTerm("");
+    setAdding(false);
+    toast({
+      title: "Keyword añadida",
+      description: `"${term}" entró al tracker. Posición se actualiza en 24h.`,
+      variant: "success",
+    });
+  };
+
   return (
     <div className="rounded-xl border border-white/5 bg-surface/80 backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3 border-b border-white/5 px-5 py-4">
@@ -103,11 +136,59 @@ export function KeywordTracker() {
         </div>
         <button
           type="button"
-          className="rounded-md border border-white/10 bg-surface-2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted hover:text-foreground"
+          onClick={() => setAdding((a) => !a)}
+          className={cn(
+            "rounded-md border px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider transition-all",
+            adding
+              ? "border-magenta/40 bg-magenta/10 text-magenta"
+              : "border-white/10 bg-surface-2 text-muted hover:text-foreground hover:border-cyan/30"
+          )}
         >
-          + Agregar keyword
+          {adding ? (
+            <span className="flex items-center gap-1">
+              <X className="h-3 w-3" />
+              Cancelar
+            </span>
+          ) : (
+            <span className="flex items-center gap-1">
+              <Plus className="h-3 w-3" />
+              Agregar keyword
+            </span>
+          )}
         </button>
       </div>
+      <AnimatePresence>
+        {adding && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden border-b border-white/5 bg-surface-2/60"
+          >
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleAdd();
+              }}
+              className="flex items-center gap-2 px-5 py-3"
+            >
+              <input
+                autoFocus
+                value={newTerm}
+                onChange={(e) => setNewTerm(e.target.value)}
+                placeholder="Ej: arquitecto sustentable Buenos Aires"
+                className="flex-1 rounded-md border border-white/10 bg-surface-2 px-3 py-1.5 text-sm text-foreground placeholder:text-muted/50 focus:border-cyan/40 focus:outline-none focus:ring-1 focus:ring-cyan/20"
+              />
+              <button
+                type="submit"
+                className="rounded-md border border-cyan/40 bg-cyan/15 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-cyan hover:bg-cyan/25 transition-all"
+              >
+                Agregar
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -133,7 +214,7 @@ export function KeywordTracker() {
             </tr>
           </thead>
           <tbody>
-            {KEYWORDS.map((k, i) => {
+            {keywords.map((k, i) => {
               const TrendIcon =
                 k.change > 0 ? ArrowUp : k.change < 0 ? ArrowDown : Minus;
               const trendColor =
@@ -157,14 +238,16 @@ export function KeywordTracker() {
                     <span
                       className={cn(
                         "inline-block min-w-[28px] rounded-md border px-1.5 py-0.5 font-mono text-xs font-semibold tabular-nums text-center",
-                        k.position <= 3
+                        k.position === 0
+                          ? "border-amber/30 bg-amber/10 text-amber"
+                          : k.position <= 3
                           ? "border-success/40 bg-success/10 text-success"
                           : k.position <= 10
                           ? "border-cyan/30 bg-cyan/10 text-cyan"
                           : "border-white/10 bg-surface-2 text-muted"
                       )}
                     >
-                      {k.position}
+                      {k.position === 0 ? "—" : k.position}
                     </span>
                   </td>
                   <td className="px-3 py-3 text-right">

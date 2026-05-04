@@ -2,13 +2,14 @@
 
 import { Users, Target, Send, TrendingUp } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
+import { PageMotion } from "@/components/ui/page-motion";
 import { NodeGraph } from "@/components/dashboard/node-graph";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { ScheduledPosts } from "@/components/dashboard/scheduled-posts";
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-6">
+    <PageMotion className="space-y-6">
       {/* Page heading */}
       <div className="flex items-end justify-between gap-4">
         <div>
@@ -78,6 +79,6 @@ export default function DashboardPage() {
         <ActivityFeed />
         <ScheduledPosts />
       </div>
-    </div>
+    </PageMotion>
   );
 }
